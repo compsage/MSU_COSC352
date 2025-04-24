@@ -25,7 +25,7 @@
   (let [html (slurp filepath)
         tables (extract-tables html ["table" "tr" "t[dh]"])]
     (save-tables-to-csv tables filepath)
-    (count tables))) ;; Optional: return table count
+    (count tables)))
 
 (defn time-it [label f]
   (let [start (System/nanoTime)]
@@ -42,7 +42,7 @@
 
 ;; === Run the Program ===
 
-(def files ["page1.html" "page2.html" "page3.html"]) ;; update with your actual file list
+(def files ["page1.html" "page2.html" "page3.html"])
 
 (time-it "Sequential" #(run-sequential files))
 (time-it "Multithreaded" #(run-parallel files))
