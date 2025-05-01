@@ -30,3 +30,4 @@ if (file.exists(html_file)) {
 } else {
   cat("Failed to download HTML file.\n")
 }
+

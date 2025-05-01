@@ -7,10 +7,10 @@ def extract_tables_from_html(html_file):
     with open(html_file, 'r', encoding='utf-8') as file:
         tables = pd.read_html(file.read())
     
-    os.makedirs("./output", exist_ok=True)
+    os.makedirs("/output", exist_ok=True)
     
     for i, table in enumerate(tables, start=1):
-        csv_filename = f"./output/table_{i}.csv"
+        csv_filename = f"/output/table_{i}.csv"
         table.to_csv(csv_filename, index=False)
         print(f"Saved: {csv_filename}")
 
