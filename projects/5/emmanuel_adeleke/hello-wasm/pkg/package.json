@@ -1,0 +1,18 @@
+{
+  "name": "hello-wasm",
+  "type": "module",
+  "collaborators": [
+    "sawcyD <sawcydeveloper@gmail.com>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "hello_wasm_bg.wasm",
+    "hello_wasm.js",
+    "hello_wasm.d.ts"
+  ],
+  "main": "hello_wasm.js",
+  "types": "hello_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello WASM</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Quicksand Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Quicksand", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body id="pageBody" class="relative bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6 font-sans transition-all duration-500">
+    <h1 class="text-2xl font-bold mb-6">Hello WebAssembly</h1>
+
+    <div class="bg-white border-gray-300 rounded-xl p-6 flex flex-col gap-4 w-full max-w-md">
+      <input id="nameInput" type="text" placeholder="Enter your name" class="w-full px-4 py-3 text-black font-semibold border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/50 transition-all" />
+      <input id="ageInput" type="number" placeholder="Enter your age" class="w-full px-4 py-3 text-black font-semibold border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/50 transition-all" />
+      <input id="repeatInput" type="number" placeholder="Repeat count" class="w-full px-4 py-3 text-black font-semibold border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/50 transition-all" />
+
+      <button id="submitBtn" class="w-full py-3 rounded-xl text-md font-semibold transition-all duration-150 ease-in-out active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black/20 bg-black text-white hover:bg-gray-900">
+        Submit
+      </button>
+
+      <pre id="result" class="bg-gray-200 p-4 rounded-xl hidden"></pre>
+    </div>
+
+    <!-- 🛠 Dev Panel -->
+    <div id="devPanel" class="fixed bottom-4 right-4 bg-black text-white p-4 rounded-lg text-xs leading-relaxed font-mono shadow-lg transition-all transform translate-y-32 opacity-0 pointer-events-none z-50">
+      <strong>Dev Stats</strong><br />
+      Loading...
+    </div>
+
+    <!-- 🛠 Dev Toggle Button -->
+    <button id="devToggle" class="fixed bottom-4 right-4 bg-black text-white px-3 py-2 rounded-full text-xs font-bold hover:bg-gray-800 shadow-md z-50">
+      DEV
+    </button>
+
+    <script type="module">
+      import init, * as wasm from "./hello-wasm/pkg/hello_wasm.js";
+
+      async function main() {
+        await init();
+
+        document.getElementById("submitBtn").addEventListener("click", async () => {
+          const name = document.getElementById("nameInput").value.trim();
+          const age = parseInt(document.getElementById("ageInput").value, 10);
+          const repeat = parseInt(document.getElementById("repeatInput").value, 10);
+
+          if (!name || isNaN(age) || isNaN(repeat) || repeat <= 0) {
+            alert("Please fill all fields correctly.");
+            return;
+          }
+
+          const output = wasm.greet(name, age, repeat);
+          const resultBox = document.getElementById("result");
+          resultBox.textContent = output;
+          resultBox.classList.remove("hidden");
+        });
+
+        // 🛠 Dev Stats
+        const devPanel = document.getElementById('devPanel');
+        const devToggle = document.getElementById('devToggle');
+        let statsVisible = false;
+        let lastFrame = performance.now();
+        let frameCount = 0;
+        let fps = 0;
+
+        function updateStats() {
+          if (!statsVisible) return;
+
+          const mem = wasm.get_memory();;
+          const memoryBytes = mem.buffer.byteLength;
+          const memoryMB = (memoryBytes / (1024 * 1024)).toFixed(2);
+          const pages = memoryBytes / (64 * 1024);
+
+          devPanel.innerHTML = `
+            <strong>Dev Stats</strong><br/>
+            Memory: ${memoryMB} MB<br/>
+            Pages: ${pages.toFixed(0)}<br/>
+            FPS: ${fps}
+          `;
+        }
+
+        function trackFPS() {
+          frameCount++;
+          const now = performance.now();
+          const delta = now - lastFrame;
+
+          if (delta >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastFrame = now;
+          }
+
+          requestAnimationFrame(trackFPS);
+        }
+
+        setInterval(updateStats, 1000);
+        requestAnimationFrame(trackFPS);
+
+        devToggle.addEventListener("click", () => {
+          statsVisible = !statsVisible;
+
+          if (statsVisible) {
+            devPanel.classList.remove("translate-y-32", "opacity-0", "pointer-events-none");
+            devPanel.classList.add("translate-y-0", "opacity-100", "pointer-events-auto");
+          } else {
+            devPanel.classList.add("translate-y-32", "opacity-0", "pointer-events-none");
+            devPanel.classList.remove("translate-y-0", "opacity-100", "pointer-events-auto");
+          }
+        });
+      }
+
+      main();
+    </script>
+  </body>
+</html>
