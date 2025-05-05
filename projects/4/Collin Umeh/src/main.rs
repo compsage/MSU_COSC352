@@ -51,6 +51,7 @@ fn process_file(file_path:&str) -> Result<(), BoxedError>{
         output_file.write_all(line.as_bytes())?;
         output_file.write_all(b"\n")?;
     }
+    println!("Very Good")
     println!("Processed and saved: {}", output_filename);
     Ok(())
 
